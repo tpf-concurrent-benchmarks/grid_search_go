@@ -9,12 +9,12 @@ type Interval struct {
 	start     float64
 	end       float64
 	step      float64
-	size      int
-	precision int
+	size      uint64
+	precision uint64
 }
 
 func NewInterval(start, end, step float64) *Interval {
-	size := int(math.Ceil((end - start) / step))
+	size := uint64(math.Ceil((end - start) / step))
 	return &Interval{
 		start:     start,
 		end:       end,
@@ -24,7 +24,7 @@ func NewInterval(start, end, step float64) *Interval {
 	}
 }
 
-func (interval *Interval) Split(nPartitions int) []Interval {
+func (interval *Interval) Split(nPartitions uint64) []Interval {
 
 	if nPartitions <= 0 {
 		return nil
@@ -34,13 +34,13 @@ func (interval *Interval) Split(nPartitions int) []Interval {
 		return interval.splitEvenly(nPartitions)
 	}
 	maxElemsPerInterval := int(math.Ceil(float64(interval.size) / float64(nPartitions)))
-	nSubIntervalsFull := int(math.Floor(float64(interval.size-nPartitions) / float64(maxElemsPerInterval-1)))
+	nSubIntervalsFull := uint64(math.Floor(float64(interval.size-nPartitions) / float64(maxElemsPerInterval-1)))
 	var intervals []Interval
 	var subEnd float64
-	for j := 0; j < nSubIntervalsFull; j++ {
+	for j := 0; j < int(nSubIntervalsFull); j++ {
 		subStart := roundFloat(interval.start+float64(j*maxElemsPerInterval)*interval.step, float64(interval.precision))
 		subEnd := roundFloat(math.Min(interval.end, subStart+float64(maxElemsPerInterval)*interval.step), float64(interval.precision))
-		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: int((subEnd - subStart) / interval.step), precision: interval.precision})
+		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil(subEnd-subStart) / interval.step), precision: interval.precision})
 	}
 	intervalReminder := NewInterval(subEnd, interval.end, interval.step)
 	subIntervalsReminder := intervalReminder.Split(nPartitions - nSubIntervalsFull)
@@ -48,12 +48,12 @@ func (interval *Interval) Split(nPartitions int) []Interval {
 	return intervals
 }
 
-func (interval *Interval) splitEvenly(nPartitions int) []Interval {
+func (interval *Interval) splitEvenly(nPartitions uint64) []Interval {
 	var intervals []Interval
-	for j := 0; j < nPartitions; j++ {
-		subStart := roundFloat(interval.start+float64(j*int(interval.size)/nPartitions)*interval.step, float64(interval.precision))
-		subEnd := roundFloat(interval.start+float64((j+1)*int(interval.size)/nPartitions)*interval.step, float64(interval.precision))
-		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: int((subEnd - subStart) / interval.step), precision: interval.precision})
+	for j := 0.0; j < float64(nPartitions); j++ {
+		subStart := roundFloat(interval.start+float64(j*float64(interval.size)/float64(nPartitions))*interval.step, float64(interval.precision))
+		subEnd := roundFloat(interval.start+float64((j+1)*float64(interval.size)/float64(nPartitions))*interval.step, float64(interval.precision))
+		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil(subEnd-subStart) / interval.step), precision: interval.precision})
 	}
 	return intervals
 }
@@ -62,7 +62,7 @@ func (interval *Interval) print() {
 	fmt.Printf("start: %v, end: %v, step: %v\n", interval.start, interval.end, interval.step)
 }
 
-func (interval *Interval) intervalSize() int {
+func (interval *Interval) intervalSize() uint64 {
 	return interval.size
 }
 
@@ -70,7 +70,7 @@ func (interval *Interval) getInterval() (float64, float64, float64) {
 	return interval.start, interval.end, interval.step
 }
 
-func (interval *Interval) setPrecision(precision int) {
+func (interval *Interval) setPrecision(precision uint64) {
 	interval.precision = precision
 }
 
