@@ -51,8 +51,8 @@ func (interval *Interval) Split(nPartitions uint64) []Interval {
 func (interval *Interval) splitEvenly(nPartitions uint64) []Interval {
 	var intervals []Interval
 	for j := 0.0; j < float64(nPartitions); j++ {
-		subStart := roundFloat(interval.start+float64(j*float64(interval.size)/float64(nPartitions))*interval.step, float64(interval.precision))
-		subEnd := roundFloat(interval.start+float64((j+1)*float64(interval.size)/float64(nPartitions))*interval.step, float64(interval.precision))
+		subStart := roundFloat(interval.start+j*float64(interval.size)/float64(nPartitions)*interval.step, float64(interval.precision))
+		subEnd := roundFloat(interval.start+(j+1)*float64(interval.size)/float64(nPartitions)*interval.step, float64(interval.precision))
 		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil(subEnd-subStart) / interval.step), precision: interval.precision})
 	}
 	return intervals
