@@ -11,7 +11,7 @@ type Partition struct {
 	iterations            uint64
 	intervals             []Interval
 	partitionsPerInterval []uint64
-	splitedIntervals      [][]Interval
+	splitIntervals        [][]Interval
 	currentIndex          []uint64
 }
 
@@ -23,7 +23,7 @@ func NewPartition(intervals []Interval, nIntervals, maxChunkSize int) *Partition
 		iterations:            0,
 		intervals:             intervals,
 		partitionsPerInterval: nil,
-		splitedIntervals:      nil,
+		splitIntervals:        nil,
 		currentIndex:          nil,
 	}
 	p.Split(maxChunkSize)
@@ -37,7 +37,7 @@ func (partition *Partition) Available() bool {
 func (partition *Partition) Next() []Interval {
 	_partition := make([]Interval, partition.nIntervals)
 	for j := 0; j < partition.nIntervals; j++ {
-		_partition[j] = partition.splitedIntervals[j][partition.currentIndex[j]]
+		_partition[j] = partition.splitIntervals[j][partition.currentIndex[j]]
 	}
 	for j := 0; j < partition.nIntervals; j++ {
 		if partition.currentIndex[j]+1 < partition.partitionsPerInterval[j] {
@@ -86,7 +86,7 @@ func (partition *Partition) Split(maxChunkSize int) {
 
 	partition.nPartitions = partition.calcPartitionsAmount(partition.partitionsPerInterval)
 	for i := 0; i < partition.nIntervals; i++ {
-		partition.splitedIntervals = append(partition.splitedIntervals, partition.intervals[i].Split(partition.partitionsPerInterval[i]))
+		partition.splitIntervals = append(partition.splitIntervals, partition.intervals[i].Split(partition.partitionsPerInterval[i]))
 	}
 	partition.iterations = partition.calcPartitionsAmount(partition.partitionsPerInterval)
 	partition.currentIndex = make([]uint64, partition.nIntervals)
