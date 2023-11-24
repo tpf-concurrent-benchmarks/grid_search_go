@@ -35,11 +35,12 @@ func (interval *Interval) Split(nPartitions uint64) []Interval {
 	}
 	maxElemsPerInterval := int(math.Ceil(float64(interval.size) / float64(nPartitions)))
 	nSubIntervalsFull := uint64(math.Floor(float64(interval.size-nPartitions) / float64(maxElemsPerInterval-1)))
+
 	var intervals []Interval
 	var subEnd float64
 	for j := 0; j < int(nSubIntervalsFull); j++ {
 		subStart := roundFloat(interval.start+float64(j*maxElemsPerInterval)*interval.step, float64(interval.precision))
-		subEnd := roundFloat(math.Min(interval.end, subStart+float64(maxElemsPerInterval)*interval.step), float64(interval.precision))
+		subEnd = roundFloat(math.Min(interval.end, subStart+float64(maxElemsPerInterval)*interval.step), float64(interval.precision))
 		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil(subEnd-subStart) / interval.step), precision: interval.precision})
 	}
 	intervalReminder := NewInterval(subEnd, interval.end, interval.step)
