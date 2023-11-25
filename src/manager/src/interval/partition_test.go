@@ -64,3 +64,83 @@ func TestAllAvailable(t *testing.T) {
 		partition.Next()
 	}
 }
+
+func TestPartitionsOne(t *testing.T) {
+	intervals := []Interval{
+		*NewInterval(0, 10, 5),
+		*NewInterval(0, 10, 5),
+		*NewInterval(0, 10, 5),
+	}
+	nIntervals := len(intervals)
+	maxChunkSize := 5
+
+	partition := NewPartition(intervals, nIntervals, maxChunkSize)
+
+	expected := [][]Interval{{
+			*NewInterval(0, 5, 5),
+			*NewInterval(0, 10, 5),
+			*NewInterval(0, 10, 5),
+		},
+		{
+			*NewInterval(5, 10, 5),
+			*NewInterval(0, 10, 5),
+			*NewInterval(0, 10, 5),		
+		},
+	}
+
+	i := 0
+	for partition.Available() {
+		part := partition.Next()
+		for j := 0; j < len(part); j++ {
+			if !compareIntervals(&part[j], &expected[i][j]) {
+				t.Errorf("Expected %v, got %v", expected[i][j], part[j])
+			}
+		}
+		i++
+	}
+}
+
+func TestPartitionsMultiple(t *testing.T) {
+	intervals := []Interval{
+		*NewInterval(0, 10, 5),
+		*NewInterval(0, 10, 5),
+		*NewInterval(0, 10, 5),
+	}
+	nIntervals := len(intervals)
+	maxChunkSize := 4
+
+	partition := NewPartition(intervals, nIntervals, maxChunkSize)
+
+	expected := [][]Interval{{
+			*NewInterval(0, 5, 5),
+			*NewInterval(0, 5, 5),
+			*NewInterval(0, 10, 5),
+		},
+		{
+			*NewInterval(5, 10, 5),
+			*NewInterval(0, 5, 5),
+			*NewInterval(0, 10, 5),		
+		},
+		{
+			*NewInterval(0, 5, 5),
+			*NewInterval(5, 10, 5),
+			*NewInterval(0, 10, 5),		
+		},
+		{
+			*NewInterval(5, 10, 5),
+			*NewInterval(5, 10, 5),
+			*NewInterval(0, 10, 5),		
+		},
+	}
+
+	i := 0
+	for partition.Available() {
+		part := partition.Next()
+		for j := 0; j < len(part); j++ {
+			if !compareIntervals(&part[j], &expected[i][j]) {
+				t.Errorf("Expected %v, got %v", expected[i][j], part[j])
+			}
+		}
+		i++
+	}
+}
