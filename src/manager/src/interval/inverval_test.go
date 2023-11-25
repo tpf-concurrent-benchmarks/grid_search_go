@@ -74,6 +74,12 @@ func TestIntervalSplit(t *testing.T) {
 			expected:   []Interval{*NewInterval(0, 3.5, 0.5), *NewInterval(3.5, 7, 0.5), *NewInterval(7, 10, 0.5)},
 			nPartitions: 3,
 		},
+		{
+			name:       "uneven split with float start and end and step", 
+			interval:   NewInterval(0.5, 10.5, 0.5),
+			expected:   []Interval{*NewInterval(0.5, 4.0, 0.5), *NewInterval(4.0, 7.5, 0.5), *NewInterval(7.5, 10.5, 0.5)},
+			nPartitions: 3,
+		},
 	}
 
 	for _, tt := range tests {
