@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/nats-io/nats.go"
 	"log"
-	_ "manager/src/interval"
+	"manager/src/interval"
 	"shared/config"
 )
 
@@ -12,6 +12,7 @@ func main() {
 	connString := config.CreateConnectionString(managerConfig.Host, managerConfig.Port)
 	nc, err := nats.Connect(connString)
 	data := config.GetDataFromJson("./src/resources/data.json")
+	intervals := interval.IntervalsFromJson(data)
 	defer nc.Close()
 
 	if err != nil {
