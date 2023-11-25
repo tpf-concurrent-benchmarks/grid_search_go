@@ -2,19 +2,15 @@ package utils
 
 import (
 	"manager/src/interval"
+	"shared/dto"
 )
 
-type WorkMessage struct {
-	Data [][3]float64
-	Agg  string
-}
-
-func CreateWorkMessageFrom(intervals []interval.Interval, aggregation string) WorkMessage {
+func CreateWorkMessageFrom(intervals []interval.Interval, aggregation string) dto.WorkMessage {
 	intervalList := make([][3]float64, len(intervals))
 	for i, auxInterval := range intervals {
 		intervalList[i] = auxInterval.GetInterval()
 	}
-	message := WorkMessage{
+	message := dto.WorkMessage{
 		Data: intervalList,
 		Agg:  aggregation,
 	}
