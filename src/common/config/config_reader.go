@@ -45,3 +45,7 @@ func GetConfig() Config {
 	}
 	return readConfig("./src/resources/config.json")
 }
+
+func CreateConnectionString(host string, port int) string {
+	return "nats://" + host + ":" + string(rune(port))
+}

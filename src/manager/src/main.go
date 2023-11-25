@@ -8,8 +8,9 @@ import (
 )
 
 func main() {
-	_ = config.GetConfig()
-	nc, err := nats.Connect(nats.DefaultURL)
+	managerConfig := config.GetConfig()
+	connString := config.CreateConnectionString(managerConfig.Host, managerConfig.Port)
+	nc, err := nats.Connect(connString)
 	if err != nil {
 		log.Fatalf("Error connecting to NATS: %s", err)
 	}
