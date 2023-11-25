@@ -47,7 +47,7 @@ func (interval *Interval) Split(nPartitions uint64) []Interval {
 	for j := 0; j < int(nSubIntervalsFull); j++ {
 		subStart := roundFloat(interval.start+float64(j*maxElemsPerInterval)*interval.step, float64(interval.precision))
 		subEnd = roundFloat(math.Min(interval.end, subStart+float64(maxElemsPerInterval)*interval.step), float64(interval.precision))
-		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil((subEnd-subStart) / interval.step)), precision: interval.precision})
+		intervals = append(intervals, Interval{start: subStart, end: subEnd, step: interval.step, size: uint64(math.Ceil((subEnd - subStart) / interval.step)), precision: interval.precision})
 	}
 	intervalReminder := NewInterval(subEnd, interval.end, interval.step)
 	subIntervalsReminder := intervalReminder.Split(nPartitions - nSubIntervalsFull)
@@ -70,7 +70,7 @@ func (interval *Interval) print() {
 	fmt.Printf("start: %v, end: %v, step: %v\n", interval.start, interval.end, interval.step)
 }
 
-func (interval *Interval) intervalSize() uint64 {
+func (interval *Interval) IntervalSize() uint64 {
 	return interval.size
 }
 

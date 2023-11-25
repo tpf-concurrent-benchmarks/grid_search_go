@@ -57,7 +57,7 @@ func (partition *Partition) CalcPartitionPerInterval(minBatches int) []uint64 {
 	var elements uint64
 	for i := 0; i < partition.nIntervals; i++ {
 		missingPartitions = partition.calcAmountOfMissingPartitions(minBatches, partitionsPerInterval)
-		elements = partition.intervals[i].intervalSize()
+		elements = partition.intervals[i].IntervalSize()
 		if elements > missingPartitions {
 			partitionsPerInterval[i] *= missingPartitions
 		} else {
@@ -95,7 +95,7 @@ func (partition *Partition) Split(maxChunkSize int) {
 func (partition *Partition) fullCalculationSize() uint64 {
 	result := uint64(1)
 	for i := 0; i < partition.nIntervals; i++ {
-		result *= partition.intervals[i].intervalSize()
+		result *= partition.intervals[i].IntervalSize()
 	}
 	return result
 }
