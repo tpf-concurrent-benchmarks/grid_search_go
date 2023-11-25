@@ -4,17 +4,20 @@ import (
 	"github.com/nats-io/nats.go"
 	"log"
 	"shared/config"
+	"worker/src/processing"
 )
 
 func main() {
 	workerConfig := config.GetConfig()
 	connString := config.CreateConnectionString(workerConfig.Host, workerConfig.Port)
-	nc, _ := nats.Connect(connString)
-	defer nc.Close()
+	natsConn, err := nats.Connect(connString)
+	if err != nil {
+		log.Fatalf("Error connecting to NATS: %s", err)
+	}
+	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
+	defer encodedConn.Close()
 
-	_, err := nc.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *nats.Msg) {
-		println(string(message.Data))
-	})
+	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", processing.ProcessMessage)
 	if err != nil {
 		log.Fatalf("Error subscribing to queue: %s", err)
 	}
