@@ -18,17 +18,17 @@ func NewGridSearch(params *Params, accumType string) *GridSearch {
 	}
 }
 
-func (gs *GridSearch) search(callback func([Size]float64) float64) {
+func (gs *GridSearch) Search(callback func([Size]float64) float64) {
 	accumulator := NewAccumulator(gs.accumType)
 
 	for i := int64(0); i < gs.params.getTotalIterations(); i++ {
 		current := gs.params.getCurrent()
 		res := callback(current)
-		accumulator.accumulate(res, current)
+		accumulator.Accumulate(res, current)
 		gs.params.next()
 	}
-	gs.result = accumulator.getResult()
-	gs.input = accumulator.getInput()
+	gs.result = accumulator.GetResult()
+	gs.input = accumulator.GetInput()
 }
 
 func (gs *GridSearch) getTotalInputs() int {

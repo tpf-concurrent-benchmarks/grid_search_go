@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -23,6 +24,12 @@ type Metrics struct {
 	Port int    `json:"port"`
 }
 
+type Data struct {
+	Data             [][]float64 `json:"data"`
+	Agg              string      `json:"agg"`
+	MaxItemsPerBatch int         `json:"maxItemsPerBatch"`
+}
+
 func readConfig(configPath string) Config {
 	var config Config
 
@@ -39,9 +46,30 @@ func readConfig(configPath string) Config {
 	return config
 }
 
+func GetDataFromJson(dataPath string) Data {
+	var data Data
+
+	file, err := os.ReadFile(dataPath)
+	if err != nil {
+		log.Fatalf("Unable to read file: %v", err)
+	}
+
+	err = json.Unmarshal(file, &data)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal JSON: %v", err)
+	}
+
+	return data
+
+}
+
 func GetConfig() Config {
 	if os.Getenv("ENV") == "local" {
 		return readConfig("./src/resources/config_local.json")
 	}
 	return readConfig("./src/resources/config.json")
+}
+
+func CreateConnectionString(host string, port int) string {
+	return "nats://" + host + ":" + strconv.Itoa(port)
 }

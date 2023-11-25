@@ -28,15 +28,15 @@ func NewAccumulator(accumType string) *Accumulator {
 	return acc
 }
 
-func (acc *Accumulator) accumulate(res float64, current [Size]float64) {
+func (acc *Accumulator) Accumulate(res float64, current [Size]float64) {
 	acc.callback(res, current)
 }
 
-func (acc *Accumulator) getResult() float64 {
+func (acc *Accumulator) GetResult() float64 {
 	return acc.trueResult
 }
 
-func (acc *Accumulator) getInput() [Size]float64 {
+func (acc *Accumulator) GetInput() [Size]float64 {
 	return acc.trueInput
 }
 

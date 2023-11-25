@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-func griewankFun(parameters [3]float64) float64 {
+func GriewankFunc(parameters [Size]float64) float64 {
 	a := parameters[0]
 	b := parameters[1]
 	c := parameters[2]
