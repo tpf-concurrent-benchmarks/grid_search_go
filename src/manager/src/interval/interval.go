@@ -75,8 +75,8 @@ func (interval *Interval) IntervalSize() uint64 {
 	return interval.size
 }
 
-func (interval *Interval) getInterval() (float64, float64, float64) {
-	return interval.start, interval.end, interval.step
+func (interval *Interval) GetInterval() [3]float64 {
+	return [3]float64{interval.start, interval.end, interval.step}
 }
 
 func (interval *Interval) setPrecision(precision uint64) {
