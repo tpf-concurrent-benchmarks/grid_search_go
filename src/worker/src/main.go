@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"github.com/nats-io/nats.go"
+	"log"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	nc, _ := nats.Connect(nats.DefaultURL)
+
+	_, err := nc.QueueSubscribe("foo", "job_workers", func(message *nats.Msg) {
+		println(string(message.Data))
+	})
+	if err != nil {
+		log.Fatalf("Error subscribing to queue: %s", err)
+	}
+	select {}
 }
