@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	nc, _ := nats.Connect("nats://localhost:4222")
+	nc, _ := nats.Connect(nats.DefaultURL)
 
 	_, err := nc.QueueSubscribe("foo", "job_workers", func(message *nats.Msg) {
 		// Print the message
@@ -15,5 +15,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error subscribing to queue: %s", err)
 	}
-	nc.Close()
+	select {}
 }
