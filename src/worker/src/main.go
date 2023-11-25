@@ -10,8 +10,9 @@ func main() {
 	workerConfig := config.GetConfig()
 	connString := config.CreateConnectionString(workerConfig.Host, workerConfig.Port)
 	nc, _ := nats.Connect(connString)
+	defer nc.Close()
 
-	_, err := nc.QueueSubscribe("foo", "job_workers", func(message *nats.Msg) {
+	_, err := nc.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *nats.Msg) {
 		println(string(message.Data))
 	})
 	if err != nil {
