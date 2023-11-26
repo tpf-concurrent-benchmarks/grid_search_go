@@ -3,7 +3,7 @@ package grid_search
 type GridSearch struct {
 	params      *Params
 	result      float64
-	totalInputs int
+	totalInputs uint64
 	accumType   string
 	input       [Size]float64
 }
@@ -31,14 +31,14 @@ func (gs *GridSearch) Search(callback func([Size]float64) float64) {
 	gs.input = accumulator.GetInput()
 }
 
-func (gs *GridSearch) getTotalInputs() int {
+func (gs *GridSearch) GetTotalInputs() uint64 {
 	return gs.totalInputs
 }
 
-func (gs *GridSearch) getResult() float64 {
+func (gs *GridSearch) GetResults() float64 {
 	return gs.result
 }
 
-func (gs *GridSearch) getInput() [Size]float64 {
+func (gs *GridSearch) GetInput() [Size]float64 {
 	return gs.input
 }
