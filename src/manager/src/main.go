@@ -20,7 +20,7 @@ func main() {
 	defer encodedConn.Close()
 
 	data := config.GetDataFromJson("./src/resources/data.json")
-	intervals := interval.IntervalsFromJson(data)
+	intervals := interval.NewIntervalFromArray(data.Data)
 	partition := interval.NewPartition(intervals, len(intervals), data.MaxItemsPerBatch)
 
 	for partition.Available() {

@@ -35,7 +35,7 @@ func (gs *GridSearch) GetTotalInputs() uint64 {
 	return gs.totalInputs
 }
 
-func (gs *GridSearch) GetResults() float64 {
+func (gs *GridSearch) GetResult() float64 {
 	return gs.result
 }
 
