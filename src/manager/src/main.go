@@ -25,15 +25,6 @@ func main() {
 	intervals := interval.NewIntervalFromArray(data.Data)
 	partition := interval.NewPartition(intervals, len(intervals), data.MaxItemsPerBatch)
 
-	for partition.Available() {
-		partitionData := partition.Next()
-		workMessage := utils.CreateWorkMessageFrom(partitionData, data.Agg)
-		err := encodedConn.Publish(managerConfig.Queues.Output, workMessage)
-		if err != nil {
-			log.Fatalf("Error publishing to queue: %s", err)
-		}
-	}
-
 	if data.Agg == "MAX" {
 		currentMaxValue := math.Inf(-1)
 		var currentMaxParameters [3]float64
@@ -59,15 +50,24 @@ func main() {
 		_ = subscribe.AutoUnsubscribe(100)
 		log.Println("Min value:", currentMin, "Min parameters:", currentMinParameters)
 	} else if data.Agg == "AVG" {
-		currentAverage := 1.0
-		totalParameters := 1.0
+		currentAverage := 0.0
+		totalParameters := 0.0
 		subscribe, _ := encodedConn.Subscribe(managerConfig.Queues.Input, func(message *dto.AvgResultsDTO) {
-			currentAverage += (currentAverage*totalParameters + message.Value*float64(message.ParametersAmount)) / (totalParameters + float64(message.ParametersAmount))
+			currentAverage = (currentAverage*totalParameters + message.Value*float64(message.ParametersAmount)) / (totalParameters + float64(message.ParametersAmount))
 			totalParameters += float64(message.ParametersAmount)
 		})
 		// TODO this value should be the number of expected results (it equals to the number of work messages sent)
 		_ = subscribe.AutoUnsubscribe(100)
 		log.Println("Average value: ", currentAverage, "Total parameters: ", totalParameters)
+	}
+
+	for partition.Available() {
+		partitionData := partition.Next()
+		workMessage := utils.CreateWorkMessageFrom(partitionData, data.Agg)
+		err := encodedConn.Publish(managerConfig.Queues.Output, workMessage)
+		if err != nil {
+			log.Fatalf("Error publishing to queue: %s", err)
+		}
 	}
 
 }
