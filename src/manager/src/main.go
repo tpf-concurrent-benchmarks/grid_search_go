@@ -5,7 +5,9 @@ import (
 	"log"
 	"manager/src/interval"
 	"manager/src/utils"
+	"math"
 	"shared/config"
+	"shared/dto"
 )
 
 func main() {
@@ -30,6 +32,42 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error publishing to queue: %s", err)
 		}
+	}
+
+	if data.Agg == "MAX" {
+		currentMaxValue := math.Inf(-1)
+		var currentMaxParameters [3]float64
+		subscribe, _ := encodedConn.Subscribe(managerConfig.Queues.Input, func(message *dto.MaxResultsDTO) {
+			if message.Value > currentMaxValue {
+				currentMaxValue = message.Value
+				currentMaxParameters = message.Parameters
+			}
+		})
+		// TODO this value should be the number of expected results (it equals to the number of work messages sent)
+		_ = subscribe.AutoUnsubscribe(100)
+		log.Println("Max value:", currentMaxValue, "Max parameters:", currentMaxParameters)
+	} else if data.Agg == "MIN" {
+		currentMin := math.Inf(1)
+		var currentMinParameters [3]float64
+		subscribe, _ := encodedConn.Subscribe(managerConfig.Queues.Input, func(message *dto.MinResultsDTO) {
+			if message.Value < currentMin {
+				currentMin = message.Value
+				currentMinParameters = message.Parameters
+			}
+		})
+		// TODO this value should be the number of expected results (it equals to the number of work messages sent)
+		_ = subscribe.AutoUnsubscribe(100)
+		log.Println("Min value:", currentMin, "Min parameters:", currentMinParameters)
+	} else if data.Agg == "AVG" {
+		currentAverage := 1.0
+		totalParameters := 1.0
+		subscribe, _ := encodedConn.Subscribe(managerConfig.Queues.Input, func(message *dto.AvgResultsDTO) {
+			currentAverage += (currentAverage*totalParameters + message.Value*float64(message.ParametersAmount)) / (totalParameters + float64(message.ParametersAmount))
+			totalParameters += float64(message.ParametersAmount)
+		})
+		// TODO this value should be the number of expected results (it equals to the number of work messages sent)
+		_ = subscribe.AutoUnsubscribe(100)
+		log.Println("Average value: ", currentAverage, "Total parameters: ", totalParameters)
 	}
 
 }
