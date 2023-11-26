@@ -3,7 +3,6 @@ package interval
 import (
 	"fmt"
 	"math"
-	"shared/config"
 )
 
 type Interval struct {
@@ -87,12 +86,12 @@ func roundFloat(value, precision float64) float64 {
 	return math.Round(value*math.Pow(10, precision)) / math.Pow(10, precision)
 }
 
-func IntervalsFromJson(data config.Data) []Interval {
+func NewIntervalFromArray(data [][]float64) []Interval {
 	var intervals []Interval
-	for i := 0; i < len(data.Data); i++ {
-		interval := NewInterval(data.Data[i][0], data.Data[i][1], data.Data[i][2])
-		if len(data.Data[i]) > 3 {
-			interval.setPrecision(uint64(data.Data[i][3]))
+	for i := 0; i < len(data); i++ {
+		interval := NewInterval(data[i][0], data[i][1], data[i][2])
+		if len(data[i]) > 3 {
+			interval.setPrecision(uint64(data[i][3]))
 		}
 		intervals = append(intervals, *interval)
 	}

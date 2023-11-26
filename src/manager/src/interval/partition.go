@@ -52,19 +52,22 @@ func (partition *Partition) Next() []Interval {
 }
 
 func (partition *Partition) CalcPartitionPerInterval(minBatches int) []uint64 {
-	partitionsPerInterval := make([]uint64, partition.nIntervals)
+	partition.partitionsPerInterval = make([]uint64, partition.nIntervals)
+	for i := 0; i < partition.nIntervals; i++ {
+		partition.partitionsPerInterval[i] = 1
+	}
 	var missingPartitions uint64
 	var elements uint64
 	for i := 0; i < partition.nIntervals; i++ {
-		missingPartitions = partition.calcAmountOfMissingPartitions(minBatches, partitionsPerInterval)
+		missingPartitions = partition.calcAmountOfMissingPartitions(minBatches, partition.partitionsPerInterval)
 		elements = partition.intervals[i].IntervalSize()
 		if elements > missingPartitions {
-			partitionsPerInterval[i] *= missingPartitions
+			partition.partitionsPerInterval[i] *= missingPartitions
 		} else {
-			partitionsPerInterval[i] *= elements
+			partition.partitionsPerInterval[i] *= elements
 		}
 	}
-	return partitionsPerInterval
+	return partition.partitionsPerInterval
 }
 
 func (partition *Partition) calcAmountOfMissingPartitions(minBatches int, partitionsPerInterval []uint64) uint64 {
