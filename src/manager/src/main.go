@@ -8,17 +8,26 @@ import (
 	"math"
 	"shared/config"
 	"shared/dto"
+	"github.com/cactus/go-statsd-client/v5/statsd"
+	"time"
+	"strconv"
 )
 
 func main() {
 	managerConfig := config.GetConfig()
 	connString := config.CreateConnectionString(managerConfig.Host, managerConfig.Port)
+	
+	metrics_addr := managerConfig.Metrics.Host + ":" + strconv.Itoa(managerConfig.Metrics.Port)
+	statsdClient, err := statsd.NewClient(metrics_addr, "manager")
+
+	startTime := time.Now()
 
 	natsConnection, err := nats.Connect(connString)
 	encodedConn, _ := nats.NewEncodedConn(natsConnection, nats.JSON_ENCODER)
 	if err != nil {
 		log.Fatalf("Error connecting to NATS: %s", err)
 	}
+
 	defer encodedConn.Close()
 
 	data := config.GetDataFromJson("./src/resources/data.json")
@@ -68,6 +77,14 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error publishing to queue: %s", err)
 		}
+	}
+
+	endTime := time.Now()
+	elapseTime := endTime.Sub(startTime).Milliseconds()
+
+	err = statsdClient.Timing("completion_time", elapseTime, 1.0)
+	if err != nil {
+		log.Fatalf("Error sending metric to statsd: %s", err)
 	}
 
 }

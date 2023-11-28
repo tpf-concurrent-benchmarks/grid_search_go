@@ -10,6 +10,7 @@ require (
 replace shared => ../common
 
 require (
+	github.com/cactus/go-statsd-client/v5 v5.1.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/nats-io/nkeys v0.4.5 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
