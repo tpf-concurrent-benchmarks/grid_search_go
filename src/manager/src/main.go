@@ -82,7 +82,7 @@ func main() {
 	endTime := time.Now()
 	elapseTime := endTime.Sub(startTime).Milliseconds()
 
-	err = statsdClient.Timing("completion_time", elapseTime, 1.0)
+	err = statsdClient.Gauge("completion_time", elapseTime, 1.0)
 	if err != nil {
 		log.Fatalf("Error sending metric to statsd: %s", err)
 	}
