@@ -6,6 +6,9 @@ import (
 	"shared/config"
 	"shared/dto"
 	"worker/src/grid_search"
+	"github.com/cactus/go-statsd-client/v5/statsd"
+	"time"
+	"strconv"
 )
 
 func main() {
@@ -18,7 +21,13 @@ func main() {
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
 	defer encodedConn.Close()
 
+	metrics_addr := workerConfig.Metrics.Host + ":" + strconv.Itoa(workerConfig.Metrics.Port)
+	statsdClient, err := statsd.NewClient(metrics_addr,"wroker") //TODO: add env variable
+
+
 	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
+		startTime := time.Now()
+
 		aggregation := message.Agg
 		parameters := message.Data
 		start, end, step := [grid_search.Size]float64{}, [grid_search.Size]float64{}, [grid_search.Size]float64{}
@@ -40,6 +49,18 @@ func main() {
 			_ = encodedConn.Publish(workerConfig.Queues.Output, dto.AvgResultsDTO{Value: gridSearch.GetResult(), ParametersAmount: gridSearch.GetTotalInputs()})
 		default:
 			log.Fatalf("Invalid aggregation type: %s", aggregation)
+		}
+
+		endTime := time.Now()
+		elapseTime := endTime.Sub(startTime).Milliseconds()
+	
+		err = statsdClient.Timing("work_time", elapseTime, 1.0)
+		if err != nil {
+			log.Fatalf("Error sending timing metric to statsd: %s", err)
+		}
+		err = statsdClient.Inc("results_produced", 1, 1.0)
+		if err != nil {
+			log.Fatalf("Error sending increment metric to statsd: %s", err)
 		}
 	})
 	if err != nil {
