@@ -17,8 +17,8 @@ func main() {
 	managerConfig := config.GetConfig()
 	connString := config.CreateConnectionString(managerConfig.Host, managerConfig.Port)
 	
-	metrics_addr := managerConfig.Metrics.Host + ":" + strconv.Itoa(managerConfig.Metrics.Port)
-	statsdClient, err := statsd.NewClient(metrics_addr, "manager")
+	metricsAddr := managerConfig.Metrics.Host + ":" + strconv.Itoa(managerConfig.Metrics.Port)
+	statsdClient, err := statsd.NewClient(metricsAddr, "manager")
 
 	startTime := time.Now()
 

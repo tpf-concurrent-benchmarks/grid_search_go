@@ -21,8 +21,8 @@ func main() {
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
 	defer encodedConn.Close()
 
-	metrics_addr := workerConfig.Metrics.Host + ":" + strconv.Itoa(workerConfig.Metrics.Port)
-	statsdClient, err := statsd.NewClient(metrics_addr,"wroker") //TODO: add env variable
+	metricsAddr := workerConfig.Metrics.Host + ":" + strconv.Itoa(workerConfig.Metrics.Port)
+	statsdClient, err := statsd.NewClient(metricsAddr,"wroker") //TODO: add env variable
 
 
 	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
