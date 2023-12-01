@@ -36,6 +36,9 @@ func main() {
 
 	messageProcessor := message_processor.NewMessageProcessor(data.Agg)
 
+	// For sync purposes
+	time.Sleep(5 * time.Second)
+
 	subscribeForResults(encodedConn, managerConfig.Queues.Input, messageProcessor, workSent, ch)
 
 	sendWork(partition, data.Agg, encodedConn, managerConfig.Queues.Output)
@@ -57,8 +60,9 @@ func main() {
 
 func subscribeForResults(encodedConn *nats.EncodedConn, inputQueue string, messageProcessor *message_processor.MessageProcessor, workSent uint64, ch chan bool) {
 	resultsReceived := uint64(0)
+	log.Println("Subscribing for results, work sent: ", workSent)
 	_, _ = encodedConn.Subscribe(inputQueue, func(msg *nats.Msg) {
-		message := utils.ParseMessage(msg)
+		message := utils.ParseMessage(msg.Data)
 		messageProcessor.ProcessMessage(message)
 		resultsReceived++
 		if resultsReceived == workSent {

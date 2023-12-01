@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"github.com/cactus/go-statsd-client/v5/statsd"
-	"github.com/nats-io/nats.go"
 	"log"
 	"manager/src/interval"
 	"shared/dto"
@@ -21,9 +20,9 @@ func CreateWorkMessageFrom(intervals []interval.Interval, aggregation string) dt
 	return message
 }
 
-func ParseMessage(message *nats.Msg) map[string]interface{} {
-	messageMap := make(map[string]interface{})
-	err := json.Unmarshal(message.Data, &messageMap)
+func ParseMessage(message []byte) map[string]json.RawMessage {
+	var messageMap map[string]json.RawMessage
+	err := json.Unmarshal(message, &messageMap)
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}

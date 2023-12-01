@@ -37,7 +37,6 @@ func main() {
 func subscribeForWork(encodedConn *nats.EncodedConn, workerConfig config.Config, statsdClient statsd.Statter) {
 	_, err := encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
 		startTime := time.Now()
-
 		aggregation, gridSearch := gridSearchFrom(message)
 		gridSearch.Search(grid_search.GriewankFunc)
 		sendResult(aggregation, encodedConn, workerConfig.Queues.Output, gridSearch)

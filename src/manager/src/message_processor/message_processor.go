@@ -22,9 +22,14 @@ func NewMessageProcessor(aggregation string) *MessageProcessor {
 	}
 }
 
-func (mp *MessageProcessor) ProcessMessage(message map[string]interface{}) {
-	value := message["value"].(float64)
-	parameters := message["parameters"].([3]float64)
+func (mp *MessageProcessor) ProcessMessage(message map[string]json.RawMessage) {
+	var value float64
+	var parameters [3]float64
+	err := json.Unmarshal(message["value"], &value)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	json.Unmarshal(message["parameters"], &parameters)
 
 	if mp.aggregation == "MAX" {
 		if value > mp.value {
@@ -37,8 +42,9 @@ func (mp *MessageProcessor) ProcessMessage(message map[string]interface{}) {
 			mp.parameters = parameters
 		}
 	} else {
-		paramsAmount := message["paramsAmount"].(uint64)
-		mp.currentAverage = (mp.currentAverage*mp.totalParameters + message["value"].(float64)*float64(paramsAmount)) / (mp.totalParameters + float64(paramsAmount))
+		var paramsAmount uint64
+		json.Unmarshal(message["paramsAmount"], &paramsAmount)
+		mp.currentAverage = (mp.currentAverage*mp.totalParameters + value*float64(paramsAmount)) / (mp.totalParameters + float64(paramsAmount))
 		mp.totalParameters += float64(paramsAmount)
 	}
 }
