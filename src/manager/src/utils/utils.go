@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
+	"github.com/nats-io/nats.go"
+	"log"
 	"manager/src/interval"
 	"shared/dto"
 )
@@ -15,4 +18,13 @@ func CreateWorkMessageFrom(intervals []interval.Interval, aggregation string) dt
 		Agg:  aggregation,
 	}
 	return message
+}
+
+func ParseMessage(message *nats.Msg) map[string]interface{} {
+	messageMap := make(map[string]interface{})
+	err := json.Unmarshal(message.Data, &messageMap)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	return messageMap
 }

@@ -1,19 +1,18 @@
 package main
 
 import (
+	"github.com/cactus/go-statsd-client/v5/statsd"
 	"github.com/nats-io/nats.go"
 	"log"
 	"shared/config"
 	"shared/dto"
-	"worker/src/grid_search"
-	"github.com/cactus/go-statsd-client/v5/statsd"
 	"time"
-	"strconv"
+	"worker/src/grid_search"
 )
 
 func main() {
 	workerConfig := config.GetConfig()
-	connString := config.CreateConnectionString(workerConfig.Host, workerConfig.Port)
+	connString := config.CreateConnectionAddress(workerConfig.Host, workerConfig.Port)
 	natsConn, err := nats.Connect(connString)
 	if err != nil {
 		log.Fatalf("Error connecting to NATS: %s", err)
@@ -21,9 +20,8 @@ func main() {
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
 	defer encodedConn.Close()
 
-	metricsAddr := workerConfig.Metrics.Host + ":" + strconv.Itoa(workerConfig.Metrics.Port)
-	statsdClient, err := statsd.NewClient(metricsAddr,"wroker") //TODO: add env variable
-
+	metricsAddr := config.CreateMetricAddress(workerConfig.Metrics.Host, workerConfig.Metrics.Port)
+	statsdClient, err := statsd.NewClient(metricsAddr, "worker") //TODO: add env variable
 
 	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
 		startTime := time.Now()
@@ -53,7 +51,7 @@ func main() {
 
 		endTime := time.Now()
 		elapseTime := endTime.Sub(startTime).Milliseconds()
-	
+
 		err = statsdClient.Timing("work_time", elapseTime, 1.0)
 		if err != nil {
 			log.Fatalf("Error sending timing metric to statsd: %s", err)

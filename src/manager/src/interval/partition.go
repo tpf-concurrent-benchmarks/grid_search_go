@@ -102,3 +102,7 @@ func (partition *Partition) fullCalculationSize() uint64 {
 	}
 	return result
 }
+
+func (partition *Partition) GetNPartitions() uint64 {
+	return partition.nPartitions
+}

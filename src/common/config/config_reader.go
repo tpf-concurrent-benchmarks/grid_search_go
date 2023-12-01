@@ -70,6 +70,10 @@ func GetConfig() Config {
 	return readConfig("./src/resources/config.json")
 }
 
-func CreateConnectionString(host string, port int) string {
+func CreateConnectionAddress(host string, port int) string {
 	return "nats://" + host + ":" + strconv.Itoa(port)
+}
+
+func CreateMetricAddress(host string, port int) string {
+	return host + ":" + strconv.Itoa(port)
 }
