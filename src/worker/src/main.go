@@ -4,6 +4,7 @@ import (
 	"github.com/cactus/go-statsd-client/v5/statsd"
 	"github.com/nats-io/nats.go"
 	"log"
+	common "shared"
 	"shared/config"
 	"shared/dto"
 	"time"
@@ -22,6 +23,14 @@ func main() {
 
 	metricsAddr := config.CreateMetricAddress(workerConfig.Metrics.Host, workerConfig.Metrics.Port)
 	statsdClient, err := statsd.NewClient(metricsAddr, "worker") //TODO: add env variable
+	ch := make(chan bool)
+
+	_, err = encodedConn.Subscribe(common.EndWorkQueue, func(msg *nats.Msg) {
+		message := string(msg.Data)
+		if message == common.EndWorkMessage {
+			ch <- true
+		}
+	})
 
 	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
 		startTime := time.Now()
@@ -64,5 +73,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error subscribing to queue: %s", err)
 	}
-	select {}
+
+	if <-ch {
+		encodedConn.Close()
+
+	}
 }
