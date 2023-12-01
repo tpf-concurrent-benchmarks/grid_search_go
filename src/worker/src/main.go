@@ -24,38 +24,14 @@ func main() {
 	statsdClient, err := statsd.NewClient(metricsAddr, "worker") //TODO: add env variable
 	ch := make(chan bool)
 
-	_, err = encodedConn.Subscribe(common.EndWorkQueue, func(msg *nats.Msg) {
-		message := string(msg.Data)
-		if message == common.EndWorkMessage {
-			ch <- true
-		}
-	})
+	waitForEnd(encodedConn, ch)
 
 	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
 		startTime := time.Now()
 
-		aggregation := message.Agg
-		parameters := message.Data
-		start, end, step := [grid_search.Size]float64{}, [grid_search.Size]float64{}, [grid_search.Size]float64{}
-		for i := 0; i < len(parameters); i++ {
-			start[i] = parameters[i][0]
-			end[i] = parameters[i][1]
-			step[i] = parameters[i][2]
-		}
-		params := grid_search.NewParams(start, end, step)
-		gridSearch := grid_search.NewGridSearch(params, aggregation)
+		aggregation, gridSearch := gridSearchFrom(message)
 		gridSearch.Search(grid_search.GriewankFunc)
-
-		switch aggregation {
-		case "MAX":
-			_ = encodedConn.Publish(workerConfig.Queues.Output, dto.MaxResultsDTO{Value: gridSearch.GetResult(), Parameters: gridSearch.GetInput()})
-		case "MIN":
-			_ = encodedConn.Publish(workerConfig.Queues.Output, dto.MinResultsDTO{Value: gridSearch.GetResult(), Parameters: gridSearch.GetInput()})
-		case "AVG":
-			_ = encodedConn.Publish(workerConfig.Queues.Output, dto.AvgResultsDTO{Value: gridSearch.GetResult(), ParametersAmount: gridSearch.GetTotalInputs()})
-		default:
-			log.Fatalf("Invalid aggregation type: %s", aggregation)
-		}
+		sendResult(aggregation, encodedConn, workerConfig.Queues.Output, gridSearch)
 
 		endTime := time.Now()
 		elapseTime := endTime.Sub(startTime).Milliseconds()
@@ -75,5 +51,44 @@ func main() {
 
 	if <-ch {
 		encodedConn.Close()
+	}
+}
+
+func sendResult(aggregation string, encodedConn *nats.EncodedConn, outputQueue string, gridSearch *grid_search.GridSearch) {
+	switch aggregation {
+	case "MAX":
+		_ = encodedConn.Publish(outputQueue, dto.MaxResultsDTO{Value: gridSearch.GetResult(), Parameters: gridSearch.GetInput()})
+	case "MIN":
+		_ = encodedConn.Publish(outputQueue, dto.MinResultsDTO{Value: gridSearch.GetResult(), Parameters: gridSearch.GetInput()})
+	case "AVG":
+		_ = encodedConn.Publish(outputQueue, dto.AvgResultsDTO{Value: gridSearch.GetResult(), ParametersAmount: gridSearch.GetTotalInputs()})
+	default:
+		log.Fatalf("Invalid aggregation type: %s", aggregation)
+	}
+}
+
+func gridSearchFrom(message *dto.WorkMessage) (string, *grid_search.GridSearch) {
+	aggregation := message.Agg
+	parameters := message.Data
+	start, end, step := [grid_search.Size]float64{}, [grid_search.Size]float64{}, [grid_search.Size]float64{}
+	for i := 0; i < len(parameters); i++ {
+		start[i] = parameters[i][0]
+		end[i] = parameters[i][1]
+		step[i] = parameters[i][2]
+	}
+	params := grid_search.NewParams(start, end, step)
+	gridSearch := grid_search.NewGridSearch(params, aggregation)
+	return aggregation, gridSearch
+}
+
+func waitForEnd(encodedConn *nats.EncodedConn, ch chan bool) {
+	_, err := encodedConn.Subscribe(common.EndWorkQueue, func(msg *nats.Msg) {
+		message := string(msg.Data)
+		if message == common.EndWorkMessage {
+			ch <- true
+		}
+	})
+	if err != nil {
+		log.Fatalf("Error subscribing to end queue: %s", err)
 	}
 }
