@@ -19,7 +19,6 @@ func main() {
 		log.Fatalf("Error connecting to NATS: %s", err)
 	}
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
-	defer encodedConn.Close()
 
 	metricsAddr := config.CreateMetricAddress(workerConfig.Metrics.Host, workerConfig.Metrics.Port)
 	statsdClient, err := statsd.NewClient(metricsAddr, "worker") //TODO: add env variable
@@ -76,6 +75,5 @@ func main() {
 
 	if <-ch {
 		encodedConn.Close()
-
 	}
 }

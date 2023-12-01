@@ -9,7 +9,6 @@ import (
 	"manager/src/utils"
 	common "shared"
 	"shared/config"
-	"sync"
 	"time"
 )
 
@@ -34,40 +33,36 @@ func main() {
 	intervals := interval.NewIntervalFromArray(data.Data)
 	partition := interval.NewPartition(intervals, len(intervals), data.MaxItemsPerBatch)
 	workSent := partition.GetNPartitions()
-	m := &sync.Mutex{}
-	c := sync.NewCond(m)
-	c.L.Lock()
+	ch := make(chan bool)
 
 	messageProcessor := message_processor.NewMessageProcessor(data.Agg)
 
-	subscribeForResults(encodedConn, managerConfig.Queues.Input, messageProcessor, workSent, c)
+	subscribeForResults(encodedConn, managerConfig.Queues.Input, messageProcessor, workSent, ch)
 
 	sendWork(partition, data.Agg, encodedConn, managerConfig.Queues.Output)
 
-	c.Wait()
-	sendEndMessage(natsConnection)
-	c.L.Unlock()
-
-	messageProcessor.SaveResults()
-	endTime := time.Now()
-	elapseTime := endTime.Sub(startTime).Milliseconds()
-
-	err = statsdClient.Gauge("completion_time", elapseTime, 1.0)
-	if err != nil {
-		log.Fatalf("Error sending metric to statsd: %s", err)
+	if <-ch {
+		log.Println("All results received, sending end message")
+		sendEndMessage(natsConnection)
+		messageProcessor.SaveResults()
+		endTime := time.Now()
+		elapseTime := endTime.Sub(startTime).Milliseconds()
+		err = statsdClient.Gauge("completion_time", elapseTime, 1.0)
+		if err != nil {
+			log.Fatalf("Error sending metric to statsd: %s", err)
+		}
 	}
 
 }
 
-func subscribeForResults(encodedConn *nats.EncodedConn, inputQueue string, messageProcessor *message_processor.MessageProcessor, workSent uint64, c *sync.Cond) {
+func subscribeForResults(encodedConn *nats.EncodedConn, inputQueue string, messageProcessor *message_processor.MessageProcessor, workSent uint64, ch chan bool) {
 	resultsReceived := uint64(0)
 	_, _ = encodedConn.Subscribe(inputQueue, func(msg *nats.Msg) {
 		message := utils.ParseMessage(msg)
 		messageProcessor.ProcessMessage(message)
 		resultsReceived++
 		if resultsReceived == workSent {
-			c.L.Unlock()
-			c.Signal()
+			ch <- true
 		}
 	})
 }
