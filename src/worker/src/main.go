@@ -21,7 +21,7 @@ func main() {
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
 
 	metricsAddr := config.CreateMetricAddress(workerConfig.Metrics.Host, workerConfig.Metrics.Port)
-	statsdClient, err := statsd.NewClient(metricsAddr, "worker") //TODO: add env variable
+	statsdClient := CreateStatsClient(metricsAddr, "worker")
 	ch := make(chan bool)
 
 	waitForEnd(encodedConn, ch)
@@ -52,6 +52,19 @@ func main() {
 	if <-ch {
 		encodedConn.Close()
 	}
+}
+
+func CreateStatsClient(metricsAddr, prefix string) statsd.Statter {
+	clientConfig := &statsd.ClientConfig{
+		Address: metricsAddr,
+		Prefix:  prefix,
+	}
+
+	statsdClient, err := statsd.NewClientWithConfig(clientConfig) //TODO: add env variable
+	if err != nil {
+		log.Fatalf("Error creating statsd client: %s", err)
+	}
+	return statsdClient
 }
 
 func sendResult(aggregation string, encodedConn *nats.EncodedConn, outputQueue string, gridSearch *grid_search.GridSearch) {

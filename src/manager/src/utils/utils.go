@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/cactus/go-statsd-client/v5/statsd"
 	"github.com/nats-io/nats.go"
 	"log"
 	"manager/src/interval"
@@ -27,4 +28,17 @@ func ParseMessage(message *nats.Msg) map[string]interface{} {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	return messageMap
+}
+
+func CreateStatsClient(metricsAddr, prefix string) statsd.Statter {
+	clientConfig := &statsd.ClientConfig{
+		Address: metricsAddr,
+		Prefix:  prefix,
+	}
+
+	statsdClient, err := statsd.NewClientWithConfig(clientConfig) //TODO: add env variable
+	if err != nil {
+		log.Fatalf("Error creating statsd client: %s", err)
+	}
+	return statsdClient
 }

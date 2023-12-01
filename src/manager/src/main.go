@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/cactus/go-statsd-client/v5/statsd"
 	"github.com/nats-io/nats.go"
 	"log"
 	"manager/src/interval"
@@ -17,7 +16,7 @@ func main() {
 	connString := config.CreateConnectionAddress(managerConfig.Host, managerConfig.Port)
 
 	metricsAddr := config.CreateMetricAddress(managerConfig.Metrics.Host, managerConfig.Metrics.Port)
-	statsdClient, err := statsd.NewClient(metricsAddr, "manager")
+	statsdClient := utils.CreateStatsClient(metricsAddr, "manager")
 
 	startTime := time.Now()
 
