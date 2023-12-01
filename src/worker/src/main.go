@@ -26,7 +26,15 @@ func main() {
 
 	waitForEnd(encodedConn, ch)
 
-	_, err = encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
+	subscribeForWork(encodedConn, workerConfig, statsdClient)
+
+	if <-ch {
+		encodedConn.Close()
+	}
+}
+
+func subscribeForWork(encodedConn *nats.EncodedConn, workerConfig config.Config, statsdClient statsd.Statter) {
+	_, err := encodedConn.QueueSubscribe(workerConfig.Queues.Input, "workers_group", func(message *dto.WorkMessage) {
 		startTime := time.Now()
 
 		aggregation, gridSearch := gridSearchFrom(message)
@@ -36,7 +44,7 @@ func main() {
 		endTime := time.Now()
 		elapseTime := endTime.Sub(startTime).Milliseconds()
 
-		err = statsdClient.Timing("work_time", elapseTime, 1.0)
+		err := statsdClient.Timing("work_time", elapseTime, 1.0)
 		if err != nil {
 			log.Fatalf("Error sending timing metric to statsd: %s", err)
 		}
@@ -47,10 +55,6 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("Error subscribing to queue: %s", err)
-	}
-
-	if <-ch {
-		encodedConn.Close()
 	}
 }
 
