@@ -50,6 +50,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error sending metric to statsd: %s", err)
 		}
+		close(ch)
 	}
 
 }

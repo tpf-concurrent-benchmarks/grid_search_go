@@ -30,6 +30,7 @@ func main() {
 
 	if <-ch {
 		encodedConn.Close()
+		close(ch)
 	}
 }
 
@@ -102,6 +103,7 @@ func waitForEnd(encodedConn *nats.EncodedConn, ch chan bool) {
 	_, err := encodedConn.Subscribe(common.EndWorkQueue, func(msg *nats.Msg) {
 		message := string(msg.Data)
 		if message == common.EndWorkMessage {
+			log.Println("Received end message")
 			ch <- true
 		}
 	})
