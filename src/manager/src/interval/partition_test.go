@@ -1,8 +1,8 @@
 package interval
 
 import (
-	"testing"
 	"math"
+	"testing"
 )
 
 func TestNewPartition(t *testing.T) {
@@ -77,14 +77,14 @@ func TestPartitionsOne(t *testing.T) {
 	partition := NewPartition(intervals, nIntervals, maxChunkSize)
 
 	expected := [][]Interval{{
-			*NewInterval(0, 5, 5),
-			*NewInterval(0, 10, 5),
-			*NewInterval(0, 10, 5),
-		},
+		*NewInterval(0, 5, 5),
+		*NewInterval(0, 10, 5),
+		*NewInterval(0, 10, 5),
+	},
 		{
 			*NewInterval(5, 10, 5),
 			*NewInterval(0, 10, 5),
-			*NewInterval(0, 10, 5),		
+			*NewInterval(0, 10, 5),
 		},
 	}
 
@@ -112,24 +112,24 @@ func TestPartitionsMultiple(t *testing.T) {
 	partition := NewPartition(intervals, nIntervals, maxChunkSize)
 
 	expected := [][]Interval{{
-			*NewInterval(0, 5, 5),
+		*NewInterval(0, 5, 5),
+		*NewInterval(0, 5, 5),
+		*NewInterval(0, 10, 5),
+	},
+		{
+			*NewInterval(5, 10, 5),
 			*NewInterval(0, 5, 5),
 			*NewInterval(0, 10, 5),
 		},
 		{
-			*NewInterval(5, 10, 5),
-			*NewInterval(0, 5, 5),
-			*NewInterval(0, 10, 5),		
-		},
-		{
 			*NewInterval(0, 5, 5),
 			*NewInterval(5, 10, 5),
-			*NewInterval(0, 10, 5),		
+			*NewInterval(0, 10, 5),
 		},
 		{
 			*NewInterval(5, 10, 5),
 			*NewInterval(5, 10, 5),
-			*NewInterval(0, 10, 5),		
+			*NewInterval(0, 10, 5),
 		},
 	}
 

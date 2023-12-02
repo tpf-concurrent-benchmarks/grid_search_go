@@ -16,7 +16,7 @@ remove:
 
 deploy:
 	mkdir -p graphite
-	N_WORKERS=${N_WORKERS} docker compose -f=docker-compose-deploy-local.yml up
+	N_WORKERS=${N_WORKERS} docker compose -f=docker-compose-deploy-local.yml up --build
 
 deploy_remote:
 	mkdir -p graphite
@@ -43,4 +43,6 @@ run_manager_local:
 	cd ./src/manager && ENV=local go run ./src
 
 format:
-	go fmt ./...
+	cd ./src/common && go fmt ./...
+	cd ./src/manager && go fmt ./...
+	cd ./src/worker && go fmt ./...
