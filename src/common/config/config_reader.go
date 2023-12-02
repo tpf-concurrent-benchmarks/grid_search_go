@@ -64,7 +64,7 @@ func GetDataFromJson(dataPath string) Data {
 }
 
 func GetConfig() Config {
-	if os.Getenv("ENV") == "local" {
+	if os.Getenv("LOCAL") == "local" {
 		return readConfig("./src/resources/config_local.json")
 	}
 	return readConfig("./src/resources/config.json")

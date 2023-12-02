@@ -5,6 +5,7 @@ import (
 	"github.com/cactus/go-statsd-client/v5/statsd"
 	"log"
 	"manager/src/interval"
+	"os"
 	"shared/dto"
 )
 
@@ -18,6 +19,13 @@ func CreateWorkMessageFrom(intervals []interval.Interval, aggregation string) dt
 		Agg:  aggregation,
 	}
 	return message
+}
+
+func GetNodeID() string {
+	if os.Getenv("LOCAL") == "" {
+		return os.Getenv("NODE_ID")
+	}
+	return "manager"
 }
 
 func ParseMessage(message []byte) map[string]json.RawMessage {
@@ -35,7 +43,7 @@ func CreateStatsClient(metricsAddr, prefix string) statsd.Statter {
 		Prefix:  prefix,
 	}
 
-	statsdClient, err := statsd.NewClientWithConfig(clientConfig) //TODO: add env variable
+	statsdClient, err := statsd.NewClientWithConfig(clientConfig)
 	if err != nil {
 		log.Fatalf("Error creating statsd client: %s", err)
 	}

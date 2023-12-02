@@ -16,7 +16,7 @@ func main() {
 	connString := config.CreateConnectionAddress(managerConfig.Host, managerConfig.Port)
 
 	metricsAddr := config.CreateMetricAddress(managerConfig.Metrics.Host, managerConfig.Metrics.Port)
-	statsdClient := utils.CreateStatsClient(metricsAddr, "manager")
+	statsdClient := utils.CreateStatsClient(metricsAddr, utils.GetNodeID())
 
 	startTime := time.Now()
 

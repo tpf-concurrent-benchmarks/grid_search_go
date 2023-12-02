@@ -4,6 +4,7 @@ import (
 	"github.com/cactus/go-statsd-client/v5/statsd"
 	"github.com/nats-io/nats.go"
 	"log"
+	"os"
 	common "shared"
 	"shared/config"
 	"shared/dto"
@@ -21,7 +22,7 @@ func main() {
 	encodedConn, _ := nats.NewEncodedConn(natsConn, nats.JSON_ENCODER)
 
 	metricsAddr := config.CreateMetricAddress(workerConfig.Metrics.Host, workerConfig.Metrics.Port)
-	statsdClient := CreateStatsClient(metricsAddr, "worker")
+	statsdClient := CreateStatsClient(metricsAddr, GetNodeID())
 	ch := make(chan bool)
 
 	waitForEnd(encodedConn, ch)
@@ -64,7 +65,7 @@ func CreateStatsClient(metricsAddr, prefix string) statsd.Statter {
 		Prefix:  prefix,
 	}
 
-	statsdClient, err := statsd.NewClientWithConfig(clientConfig) //TODO: add env variable
+	statsdClient, err := statsd.NewClientWithConfig(clientConfig)
 	if err != nil {
 		log.Fatalf("Error creating statsd client: %s", err)
 	}
@@ -109,4 +110,11 @@ func waitForEnd(encodedConn *nats.EncodedConn, ch chan bool) {
 	if err != nil {
 		log.Fatalf("Error subscribing to end queue: %s", err)
 	}
+}
+
+func GetNodeID() string {
+	if os.Getenv("LOCAL") == "" {
+		return os.Getenv("NODE_ID")
+	}
+	return "manager"
 }
