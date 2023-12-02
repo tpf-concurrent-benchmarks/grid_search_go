@@ -29,7 +29,10 @@ func (mp *MessageProcessor) ProcessMessage(message map[string]json.RawMessage) {
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
-	json.Unmarshal(message["parameters"], &parameters)
+	err = json.Unmarshal(message["parameters"], &parameters)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
 
 	if mp.aggregation == "MAX" {
 		if value > mp.value {
@@ -43,7 +46,10 @@ func (mp *MessageProcessor) ProcessMessage(message map[string]json.RawMessage) {
 		}
 	} else {
 		var paramsAmount uint64
-		json.Unmarshal(message["paramsAmount"], &paramsAmount)
+		err = json.Unmarshal(message["paramsAmount"], &paramsAmount)
+		if err != nil {
+			log.Fatalf("Error unmarshalling JSON: %v", err)
+		}
 		mp.currentAverage = (mp.currentAverage*mp.totalParameters + value*float64(paramsAmount)) / (mp.totalParameters + float64(paramsAmount))
 		mp.totalParameters += float64(paramsAmount)
 	}
