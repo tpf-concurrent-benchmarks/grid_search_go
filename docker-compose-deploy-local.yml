@@ -51,6 +51,7 @@ services:
     stdin_open: true
     depends_on:
       - graphite
+      - nats
     deploy:
       replicas: ${N_WORKERS}
       restart_policy:
