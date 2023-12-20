@@ -59,7 +59,7 @@ services:
 
   worker:
     image: grid_search_go_worker
-    command: bash -c "sleep 10 && cd /app/worker/ && ./worker-gs"
+    command: sh -c "sleep 10 && cd /app/worker/ && ./worker-gs"
     depends_on:
       - graphite
       - nats
@@ -73,7 +73,7 @@ services:
 
   manager:
     image: grid_search_go_manager
-    command: bash -c "sleep 10 && cd /app/manager/ && ./manager-gs"
+    command: sh -c "sleep 10 && cd /app/manager/ && ./manager-gs"
     depends_on:
       - graphite
       - nats
