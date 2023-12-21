@@ -12,6 +12,10 @@ services:
       - "./graphite:/opt/graphite/storage/:rw"
     ports:
       - "8080:8080"
+    deploy:
+      placement:
+          constraints:
+          - node.role == manager
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
@@ -29,6 +33,13 @@ services:
       - "/sys:/sys:ro"
       - "/var/lib/docker/:/var/lib/docker:ro"
       - "/dev/disk/:/dev/disk:ro"
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   grafana:
     image: efoppiano/grafana:0.1
@@ -44,11 +55,19 @@ services:
       - GF_LOG_FILTERS=rendering:debug
     depends_on:
       - graphite
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   renderer:
     image: grafana/grafana-image-renderer:latest
     ports:
       - "8082:8081"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   nats:
     image: nats:2.10.5
@@ -79,6 +98,9 @@ services:
       - nats
       - worker
     deploy:
+      placement:
+        constraints:
+          - node.role == manager
       restart_policy:
         condition: none
     environment:
