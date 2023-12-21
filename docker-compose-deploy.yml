@@ -75,6 +75,10 @@ services:
       - "4222:4222"
       - "8222:8222"
       - "6222:6222"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   worker:
     image: grid_search_go_worker
