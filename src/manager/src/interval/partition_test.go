@@ -25,6 +25,33 @@ func TestNewPartition(t *testing.T) {
 	}
 }
 
+func TestPartitionsPerInterval(t *testing.T) {
+	intervals := []Interval{
+		*NewInterval(4, 8, 1),
+		*NewInterval(4, 8, 1),
+		*NewInterval(8, 10, 1),
+	}
+	nIntervals := len(intervals)
+	maxChunkSize := 5
+
+	partition := NewPartition(intervals, nIntervals, maxChunkSize)
+
+	partitionsPerInterval := partition.CalcPartitionPerInterval(3)
+
+	t.Logf("Partitions per interval: %v", partitionsPerInterval)
+	if len(partitionsPerInterval) != nIntervals {
+		t.Errorf("Expected partitionsPerInterval length to be %d, got %d", nIntervals, len(partitionsPerInterval))
+	}
+
+	expected := []uint64{3, 1, 1}
+
+	for i := 0; i < nIntervals; i++ {
+		if partitionsPerInterval[i] != expected[i] {
+			t.Errorf("Expected partitionsPerInterval[%d] to be %d, got %d", i, expected[i], partitionsPerInterval[i])
+		}
+	}
+}
+
 func TestAvailable(t *testing.T) {
 	intervals := []Interval{
 		*NewInterval(0, 10, 5),
