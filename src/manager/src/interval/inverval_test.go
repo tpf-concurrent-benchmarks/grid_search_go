@@ -2,7 +2,6 @@ package interval
 
 import (
 	"testing"
-	// "fmt"
 )
 
 func compareIntervals(a *Interval, b *Interval) bool {
@@ -11,9 +10,6 @@ func compareIntervals(a *Interval, b *Interval) bool {
 
 func testIntervalGeneric(t *testing.T, interval *Interval, expected []Interval, nPartitions uint64) {
 	actual := interval.Split(nPartitions)
-
-	// fmt.Println("actual:", actual)
-	// fmt.Println("expected:", expected)
 
 	if len(actual) != len(expected) {
 		t.Errorf("Split(%v) = %v; want %v", nPartitions, actual, expected)
