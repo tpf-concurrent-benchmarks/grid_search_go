@@ -14,11 +14,11 @@ setup: init build
 remove:
 	docker stack rm gs_go
 
-deploy:
+deploy_local:
 	mkdir -p graphite
 	N_WORKERS=${N_WORKERS} docker compose -f=docker-compose-deploy-local.yml up --build
 
-deploy_remote:
+deploy:
 	mkdir -p graphite
 	N_WORKERS=${N_WORKERS} docker stack deploy -c docker-compose-deploy.yml gs_go
 
