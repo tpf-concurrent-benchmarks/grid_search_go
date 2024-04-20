@@ -10,8 +10,6 @@ The objective of this project is to benchmark the language on a real-world distr
 
 ### Requirements
 
-### Requirements
-
 - [Docker >3](https://www.docker.com/) (needs docker swarm)
 - [Go >1.21.4](https://golang.org/) (for running locally)
 
