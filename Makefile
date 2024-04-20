@@ -20,7 +20,11 @@ deploy_local:
 
 deploy:
 	mkdir -p graphite
-	N_WORKERS=${N_WORKERS} docker stack deploy -c docker-compose-deploy.yml gs_go
+	until N_WORKERS=${N_WORKERS} \
+	docker stack deploy \
+	-c docker-compose-deploy.yml \
+	gs_go; \
+	do sleep 1; done
 
 down_graphite:
 	if docker stack ls | grep -q graphite; then \
